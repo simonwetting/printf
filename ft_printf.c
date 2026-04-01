@@ -12,6 +12,8 @@
 
 #include <stdarg.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <limits.h>
 
 void	ft_putchar(int c)
 {
@@ -53,15 +55,15 @@ void	print_zeros(int n)
 
 void	ft_putnbr_base(int	nbr, char *base, int unsigned_true, int is_pointer)
 {
-	long number;
-	int		base_length;
+	long long			number;
+	int				base_length;
 	
 	if (is_pointer)
 		print_zeros(nbr);
 	number = nbr;
 	base_length = ft_strlen(base);
 	if (unsigned_true && number < 0)
-		number = 4294967296 - number;
+			number = UINT_MAX + number;
 	if (number < 0)
 	{
 		ft_putchar('-');
@@ -70,6 +72,32 @@ void	ft_putnbr_base(int	nbr, char *base, int unsigned_true, int is_pointer)
 	if (number > base_length - 1)
 		ft_putnbr_base(number / base_length, base, unsigned_true, 0);
 	ft_putchar(base[number % base_length]);
+}
+
+int	print(const char *format, va_list args, int unsigned_true)
+{
+	switch (*format)
+	{
+	case 'd':
+	case 'i':
+		ft_putnbr_base(va_arg(args, int), "0123456789", unsigned_true, 0);
+		break;
+	case 's':
+		ft_putstr(va_arg(args, char *));
+		break;
+	case 'c':
+		ft_putchar(va_arg(args, int));
+		break;
+	case 'p':
+		ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", unsigned_true, 1);
+		break;
+	case 'x':
+	case 'X':
+		ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", unsigned_true, 0);
+		break;
+	default:
+		return (0);
+	}
 }
 
 int	ft_printf(const char *format, ...)
@@ -89,29 +117,8 @@ int	ft_printf(const char *format, ...)
 				unsigned_true = 1;
 				format++;
 			}
-			switch (*format)
-			{
-			case 'd':
-			case 'i':
-				ft_putnbr_base(va_arg(args, int), "0123456789", unsigned_true, 0);
-				break;
-			case 's':
-				ft_putstr(va_arg(args, char *));
-				break;
-			case 'c':
-				ft_putchar(va_arg(args, int));
-				break;
-			case 'p':
-				ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", unsigned_true, 1);
-				break;
-			case 'x':
-			case 'X':
-				ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", unsigned_true, 0);
-				break;
-			default:
+			if (print(format++, args, unsigned_true) == 0)
 				return (0);
-			}
-			format++;
 		}
 		else
 			write(1, format++, 1);
@@ -128,9 +135,12 @@ int		main(void)
 	// int				sign = unsign;
 	// printf("%d", sign);
 	ft_printf("%d\n", -12355);
+	ft_printf(">%ud\n", -1);
+	ft_printf("%d\n", 12355);
 	ft_printf("%x\n", 12355);
-	ft_printf("%c\n", 'b');
-	ft_printf("%s\n", "test");
+	ft_printf("%c\n\n", 'b');
+	ft_printf("\n%s\n", "test");
+	ft_printf("%c\n\n", 'b');
 	ft_printf("pointer>%p\npointer>%p\n", 12355, 12345);
 	// ft_putnbr_base(-12355, "0123456789", 0, 1);
 	// ft_putnbr_base(12355, "0123456789", 0, 1);
