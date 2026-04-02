@@ -6,52 +6,58 @@
 /*   By: anonymous <anonymous@student.codam.nl>       +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2026/03/19 15:38:16 by anonymous     #+#    #+#                 */
-/*   Updated: 2026/04/01 17:54:48 by swetting      ########   odam.nl         */
+/*   Updated: 2026/04/02 15:51:36 by swetting      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
+#include <stdint.h>
 
 int	print(const char *format, va_list args)
 {
+	int	len;
+
+	len = 0;
+	if (*format == '%')
+		len += write(1, "%", 1);
 	if (*format == 'u')
-		ft_putnbr_base(va_arg(args, int), "0123456789", 1, 0);
-	else if (*format == 'd' || *format == 'i')
-		ft_putnbr_base(va_arg(args, int), "0123456789", 0, 0);
-	else if (*format == 's')
-		ft_putstr(va_arg(args, char *));
-	else if (*format == 'c')
-		ft_putchar(va_arg(args, int));
-	else if (*format == 'p')
-		ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", 0, 1);
-	else if (*format == 'x' || *format == 'X')
-		ft_putnbr_base(va_arg(args, int), "0123456789ABCDEF", 0, 0);
-	else
-		return (0);
-	return (1);
+		len += call_putnbru(va_arg(args, unsigned int), "0123456789");
+	if (*format == 'd' || *format == 'i')
+		len += call_putnbr(va_arg(args, int), "0123456789", 0);
+	if (*format == 's')
+		len += ft_putstr(va_arg(args, char *));
+	if (*format == 'c')
+		len += ft_putchar(va_arg(args, int));
+	if (*format == 'p')
+	{
+		len += call_putpointer(va_arg(args, unsigned long), "0123456789abcdef");
+	}
+	if (*format == 'x')
+		len += call_putnbru(va_arg(args, unsigned long), "0123456789abcdef");
+	if (*format == 'X')
+		len += call_putnbru(va_arg(args, unsigned long), "0123456789ABCDEF");
+	return (len);
 }
 
 int	ft_printf(const char *format, ...)
 {
-	va_list args;
-	va_start(args, format);
+	va_list	args;
+	int		len;
 
+	len = 0;
+	va_start(args, format);
 	while (*format)
 	{
 		if (*format == '%')
 		{
-			if (print(++format, args) == 0)
-				return (0);
+			len += print(++format, args);
 			format++;
 		}
 		else
-			write(1, format++, 1);
+			len += write(1, format++, 1);
 	}
-	return (1);
+	return (len);
 }
-
-
-
 //void	print_zeros(int n)
 //{
 //	long	nbr;
@@ -68,7 +74,6 @@ int	ft_printf(const char *format, ...)
 //	}
 //	write(1, "0000000000000000", 16 - length);
 //}
-
 
 //int	print(const char *format, va_list args)
 //{
